@@ -27,13 +27,19 @@ defined('ABSPATH') || exit;
 if (!file_exists(__DIR__ . '/vendor/autoload.php')) {
     add_action('admin_notices', function () {
         echo '<div class="notice notice-error"><p>';
-        echo '<strong>Sitechips Boilerplate:</strong> Composer dependencies missing. Run <code>composer install</code>.';
+        echo '<strong>Rss News Feeder:</strong> Composer dependencies missing. Run <code>composer install</code>.';
         echo '</p></div>';
     });
     return;
 }
 
-require_once __DIR__ . '/vendor/autoload.php';
+//require_once __DIR__ . '/vendor/autoload.php';
+
+$autoloadFile = __DIR__ . '/vendor/autoload.php';
+if (!defined('RSS_NEWS_FEEDER_LOADED')) {
+    define('RSS_NEWS_FEEDER_LOADED', true);
+    require_once __DIR__ . '/vendor/autoload.php';
+}
 
 use Furgo\RssNewsFeeder\RssNewsFeeder;
 
@@ -44,7 +50,7 @@ add_action('plugins_loaded', function (): void {
     } catch (Exception $e) {
         add_action('admin_notices', function () use ($e) {
             printf(
-                '<div class="notice notice-error"><p><strong>Sitechips Boilerplate Error:</strong> %s</p></div>',
+                '<div class="notice notice-error"><p><strong>Rss News Feeder Error:</strong> %s</p></div>',
                 esc_html($e->getMessage())
             );
         });
