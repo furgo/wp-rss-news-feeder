@@ -2,8 +2,8 @@
 # =====================================
 
 # Configuration Variables
-PLUGIN_NAME = sitechips-boilerplate
-PLUGIN_DIR = web/wp-content/plugins/$(PLUGIN_NAME)
+PLUGIN_NAME = rss-news-feeder
+PLUGIN_DIR = .
 TEST_DIR = tests
 LIB_DIR = lib
 
@@ -31,7 +31,7 @@ NC = \033[0m # No Color
 
 .PHONY: help
 help: ## Show this help message
-	@echo "$(GREEN)Sitechips Plugin Framework$(NC)"
+	@echo "$(GREEN)RSS News Feeder Plugin$(NC)"
 	@echo ""
 	@echo "$(YELLOW)Plugin Developer Commands:$(NC)"
 	@grep -E '^[a-zA-Z_-]+:.*?## Plugin:' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## Plugin:"}; {printf "  %-20s %s\n", $$1, $$2}'
@@ -44,46 +44,42 @@ help: ## Show this help message
 
 .PHONY: test-plugin
 test-plugin: ## Plugin: Run plugin tests only
-	cd $(PLUGIN_DIR) && vendor/bin/phpunit --testsuite=Plugin
+	@echo "🧪 Running plugin tests in DDEV..."
+	@cd ../../../.. && ddev exec -d /var/www/html/web/wp-content/plugins/$(PLUGIN_NAME) vendor/bin/phpunit -c tests/phpunit.xml
 
 .PHONY: quality-plugin
 quality-plugin: ## Plugin: Run quality checks (PHPCS + PHPStan)
-	cd $(PLUGIN_DIR) && vendor/bin/phpcs src/
-	cd $(PLUGIN_DIR) && vendor/bin/phpstan analyse src/
+	@echo "🔍 Running quality checks in DDEV..."
+	@cd ../../../.. && ddev exec -d /var/www/html/web/wp-content/plugins/$(PLUGIN_NAME) vendor/bin/phpcs src/
+	@cd ../../../.. && ddev exec -d /var/www/html/web/wp-content/plugins/$(PLUGIN_NAME) vendor/bin/phpstan analyse src/
 
 .PHONY: watch-plugin
 watch-plugin: ## Plugin: Watch plugin files for changes
 	@echo "Watching plugin files for changes..."
-	@find $(PLUGIN_DIR)/src -name "*.php" | entr -c make test-plugin
+	@find src -name "*.php" | entr -c make test-plugin
 
 # ===================================
 # FRAMEWORK DEVELOPER COMMANDS
 # ===================================
 
 .PHONY: test-all
-test-all: ## Framework: Run all tests (Core + Plugin)
-	cd $(PLUGIN_DIR) && vendor/bin/phpunit --testsuite=All
-
-.PHONY: test-core
-test-core: ## Framework: Run core framework tests only
-	cd $(PLUGIN_DIR) && vendor/bin/phpunit --testsuite=Core
+test-all: ## Framework: Run all tests (Core + Plugin + Integration)
+	@echo "🧪 Running ALL tests in DDEV..."
+	@echo "$(GREEN)Running Plugin Tests...$(NC)"
+	@cd ../../../.. && ddev exec -d /var/www/html/web/wp-content/plugins/$(PLUGIN_NAME) vendor/bin/phpunit -c tests/phpunit.xml
 
 .PHONY: test-coverage
 test-coverage: ## Framework: Generate test coverage report
-	cd $(PLUGIN_DIR) && vendor/bin/phpunit --testsuite=Framework --coverage-html coverage/
+	@echo "📊 Generating test coverage in DDEV..."
+	@echo "$(GREEN)Generating Plugin Test Coverage...$(NC)"
+	@cd ../../../.. && ddev exec -d /var/www/html/web/wp-content/plugins/$(PLUGIN_NAME) vendor/bin/phpunit -c tests/phpunit.xml --coverage-html coverage/plugin
 
 .PHONY: quality-all
 quality-all: ## Framework: Full quality check (PHPCS + PHPStan + Tests)
-	cd $(PLUGIN_DIR) && vendor/bin/phpcs
-	cd $(PLUGIN_DIR) && vendor/bin/phpstan analyse
-	cd $(PLUGIN_DIR) && vendor/bin/phpunit --testsuite=Framework
-
-.PHONY: sync-core
-sync-core: ## Framework: Sync core files between lib/ directories
-	@echo "Syncing core framework files..."
-	rsync -av --delete \
-		$(LIB_DIR)/ \
-		$(PLUGIN_DIR)/lib/
+	@echo "🔍 Running full quality check in DDEV..."
+	@cd ../../../.. && ddev exec -d /var/www/html/web/wp-content/plugins/$(PLUGIN_NAME) vendor/bin/phpcs
+	@cd ../../../.. && ddev exec -d /var/www/html/web/wp-content/plugins/$(PLUGIN_NAME) vendor/bin/phpstan analyse
+	$(MAKE) test-all
 
 # ===================================
 # DEPLOYMENT COMMANDS
@@ -115,14 +111,14 @@ upload-to-dev: ## Deploy: Upload plugin to development server
 		--exclude phpstan.neon \
 		--exclude composer.* \
 		--exclude .strauss.json \
-		-e ssh $(PLUGIN_DIR)/ $(SSH_USER)@$(SSH_SERVER):$(REMOTE_PLUGIN_DIR)
+		-e ssh ./ $(SSH_USER)@$(SSH_SERVER):$(REMOTE_PLUGIN_DIR)
 
 .PHONY: build-release
 build-release: ## Deploy: Build release ZIP (without dev dependencies)
-	@echo "Building release package..."
-	cd $(PLUGIN_DIR) && composer install --no-dev --optimize-autoloader
+	@echo "📦 Building release package..."
+	@cd ../../../.. && ddev exec -d /var/www/html/web/wp-content/plugins/$(PLUGIN_NAME) composer install --no-dev --optimize-autoloader
 	rm -f $(PLUGIN_NAME).zip
-	cd web/wp-content/plugins && zip -r9 ../../../$(PLUGIN_NAME).zip $(PLUGIN_NAME)/ \
+	cd .. && zip -r9 $(PLUGIN_NAME)/$(PLUGIN_NAME).zip $(PLUGIN_NAME)/ \
 		-x "*/.*" \
 		-x "*/tests/*" \
 		-x "*/vendor/*" \
@@ -134,9 +130,8 @@ build-release: ## Deploy: Build release ZIP (without dev dependencies)
 		-x "*/phpcs.xml" \
 		-x "*/phpstan.neon" \
 		-x "*/.strauss.json" \
-		-x "*/emergency-restore.php" \
 		-x "*/setup.php"
-	cd $(PLUGIN_DIR) && composer install
+	@cd ../../../.. && ddev exec -d /var/www/html/web/wp-content/plugins/$(PLUGIN_NAME) composer install
 	@echo "Release package created: $(PLUGIN_NAME).zip"
 
 .PHONY: upload-release
@@ -151,28 +146,26 @@ upload-release: build-release ## Deploy: Build and upload release to release ser
 
 .PHONY: clean
 clean: ## Remove temporary files and caches
-	rm -rf $(PLUGIN_DIR)/coverage
-	rm -rf $(PLUGIN_DIR)/vendor
-	rm -rf $(PLUGIN_DIR)/src/Libs
+	rm -rf coverage
+	rm -rf vendor
+	rm -rf src/Libs
 	rm -f $(PLUGIN_NAME).zip
 	find . -name "*.log" -delete
 
 .PHONY: install
 install: ## Install all dependencies (with Strauss)
-	cd $(PLUGIN_DIR) && composer install
+	@echo "📦 Installing dependencies in DDEV..."
+	@cd ../../../.. && ddev exec -d /var/www/html/web/wp-content/plugins/$(PLUGIN_NAME) composer install
 	@echo "Dependencies installed and isolated with Strauss"
 
 .PHONY: pot
 pot: ## Generate POT file for translations
-	cd $(PLUGIN_DIR) && vendor/bin/wp i18n make-pot \
-		--domain=$(PLUGIN_NAME) . languages/$(PLUGIN_NAME).pot
+	@echo "🌐 Generating POT file in DDEV..."
+	@cd ../../../.. && ddev exec -d /var/www/html/web/wp-content/plugins/$(PLUGIN_NAME) wp i18n make-pot --domain=$(PLUGIN_NAME) . languages/$(PLUGIN_NAME).pot
 
 # Quick development helpers
 .PHONY: tp
 tp: test-plugin ## Alias for test-plugin
-
-.PHONY: tc
-tc: test-core ## Alias for test-core
 
 .PHONY: ta
 ta: test-all ## Alias for test-all
