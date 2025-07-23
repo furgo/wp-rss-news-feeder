@@ -3,10 +3,11 @@
     "description": "RSS Feed Aggregation System with WordPress Backend and JavaScript Frontend",
     "type": "wordpress-plugin",
     "license": "GPL-2.0-or-later",
+    "version": "1.0.0",
     "authors": [
         {
-            "name": "Axel W\u00fcstemann",
-            "homepage": "wuestemann.me"
+            "name": "Axel Wüstemann",
+            "homepage": "https://wuestemann.me"
         }
     ],
     "minimum-stability": "stable",
