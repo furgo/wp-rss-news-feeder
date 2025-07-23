@@ -1,0 +1,89 @@
+# Composer
+/vendor/
+composer.lock
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+/logs/
+error_log
+debug.log
+
+# WordPress
+wp-config.php
+wp-content/uploads/
+.htaccess
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Build files
+/assets/dist/
+/build/
+
+# PHPUnit and Testing
+/tests/.phpunit.cache/
+/tests/results/
+/coverage/
+phpunit.phar
+.phpunit.result.cache
+
+# Code Quality Tools
+/.phpcs.cache
+/phpstan.neon.dist
+/.phpstan.cache/
+
+# Development
+.env
+.env.local
+.env.*.local
+
+# Temporary files
+*.tmp
+*.temp
+*~
+
+# Backup files
+*.bak
+*.backup
+*.orig
+
+# Archives
+*.tar
+*.tar.gz
+*.zip
+*.rar
+
+# Security
+auth.json
+.htpasswd
+
+# Plugin specific
+/languages/*.mo
+/languages/*.pot
+
+# Development tools
+/tools/
+/scripts/
+/.github/workflows/deploy.yml

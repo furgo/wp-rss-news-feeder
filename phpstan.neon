@@ -1,0 +1,21 @@
+
+parameters:
+    level: 8
+    paths:
+        - sitechips-boilerplate.php
+        - tests
+
+    excludePaths:
+        - vendor
+
+    # WordPress-Stubs für alle WordPress-Funktionen
+    bootstrapFiles:
+        - vendor/php-stubs/wordpress-stubs/wordpress-stubs.php
+
+    ignoreErrors:
+        # Modern way für deprecated options
+        -
+            identifier: missingType.iterableValue
+
+    # Level 8 ist sehr streng - diese Checks lockern für WordPress
+    checkTooWideReturnTypesInProtectedAndPublicMethods: false
