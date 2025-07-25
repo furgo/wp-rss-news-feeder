@@ -21,7 +21,7 @@ use Furgo\Sitechips\Core\Services\EventManager;
 use Furgo\Sitechips\Core\Services\AssetManager;
 use Furgo\Sitechips\Core\Services\NullLogger;
 use Furgo\Sitechips\Core\Services\WordPressLogger;
-use Psr\Log\LoggerInterface;
+use Furgo\SitechipsBoilerplate\Libs\Psr\Log\LoggerInterface;
 
 /**
  * Core Service Provider Class
@@ -158,8 +158,8 @@ class CoreServiceProvider extends ServiceProvider
      * Load plugin configuration
      *
      * @return void
-     * @throws \Psr\Container\ContainerExceptionInterface
-     * @throws \Psr\Container\NotFoundExceptionInterface
+     * @throws \Furgo\SitechipsBoilerplate\Libs\Psr\Container\ContainerExceptionInterface
+     * @throws \Furgo\SitechipsBoilerplate\Libs\Psr\Container\NotFoundExceptionInterface
      */
     private function loadPluginConfig(): void
     {
